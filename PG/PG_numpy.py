@@ -71,6 +71,20 @@ def main():
 
     plt.plot(range(NUM_EPISODES), rws)
     plt.show()
+    ## Uncomment to see agent play
+    # while True:
+    #     done = False
+    #     state = env.reset()
+    #     total_rw = 0
+    #     while not done:
+    #         env.render()
+    #         probs = pi.forward(state)
+    #         action = probs.argmax()
+    #         next_s, rw, done, _ = env.step(action)
+    #         state = next_s
+    #         total_rw += rw
+    #         if done:
+    #             print("die, rw = ", total_rw)
 
 if __name__ == '__main__':
     main()
