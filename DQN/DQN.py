@@ -1,3 +1,5 @@
+# SOLVED CartPole after ~ 60 episodes
+
 import gym
 from keras.models import Model
 from keras.optimizers import Adam
@@ -6,7 +8,7 @@ from keras.layers import *
 import random
 import matplotlib.pyplot as plt
 from ER import ReplayBuffer
-
+import time
 class DeepQNetwork:
     def __init__(self, n_input, n_a, lr):
         self.n_input = n_input
@@ -16,8 +18,8 @@ class DeepQNetwork:
 
     def create_model(self):
         inputs = Input(shape=(self.n_input,))
-        x = Dense(32, activation='relu')(inputs)
-        x = Dense(32, activation='relu')(x)
+        x = Dense(256, activation='relu')(inputs)
+        x = Dense(256, activation='relu')(x)
         predictions = Dense(self.n_a, activation='linear')(x)
 
         model = Model(inputs=inputs, outputs=predictions)
@@ -39,7 +41,7 @@ def main():
     DQN     = DeepQNetwork(n_input, n_a, lr)
 
 
-    NUM_EPISODE = 400
+    NUM_EPISODE = 100
     GAMMA       = 0.99
     DECAY_RATE  = 0.99
     EPS         = 1
@@ -50,6 +52,8 @@ def main():
     memory = ReplayBuffer(BUFFER_MAX_SIZE)
 
     reward_history = []
+
+    start_time = time.time()
     for episode_i in range(NUM_EPISODE):
         state   = env.reset()
         total_rw = 0
@@ -77,12 +81,13 @@ def main():
             dones = [e[4] for e in exps]
 
             q_pred = DQN.Q.predict(states)
+            q_next = DQN.Q.predict(next_states)
+
+
             for i in range(len(exps)):
                 chosen_action = actions[i]
-                if dones[i]:
-                    q_pred[i][chosen_action] = rewards[i]
-                else:
-                    q_pred[i][chosen_action] = rewards[i] + GAMMA * DQN.Q.predict(to_np(next_states[i]))[0].max()
+                q_pred[i][chosen_action] = rewards[i] + q_next[i].max() * (not dones[i]) * GAMMA
+
 
             DQN.Q.train_on_batch(states, q_pred)
 
@@ -94,7 +99,7 @@ def main():
                 print(episode_i, total_rw)
                 break
 
-
+    print(NUM_EPISODE,"episodes time :", time.time() - start_time)
     plt.plot(range(NUM_EPISODE), reward_history)
     plt.show()
 

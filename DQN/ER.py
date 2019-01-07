@@ -14,9 +14,6 @@ class ReplayBuffer(object):
         else:
             return random.sample(self.buffer, batch_size)
 
-    def size(self):
-        return self.buffer_size
-
     def add(self, state, action, reward, new_state, done):
         experience = (state, action, reward, new_state, done)
         self.buffer.append(experience)
